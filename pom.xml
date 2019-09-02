@@ -14,6 +14,20 @@
         <maven.compiler.target>1.6</maven.compiler.target>
     </properties>
 
+    <build>
+        <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.0.0-M3</version>
+            <configuration>
+                <suiteXmlFiles>
+                    <suiteXmlFile>temp-testng-customsuite.xml</suiteXmlFile>
+                </suiteXmlFiles>
+            </configuration>
+        </plugin>
+        </plugins>
+    </build>
     <dependencies>
 
         <!-- https://mvnrepository.com/artifact/org.testng/testng -->

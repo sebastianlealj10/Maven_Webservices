@@ -63,7 +63,7 @@ public class StatusTests {
         @Test
         public void test_getDeleteStatus() {
 
-                int delete = 4;
+                int delete = 11;
                 given().
                         when().contentType(ContentType.JSON).
                         delete("http://localhost:8080/api/users/"+ delete).
