@@ -3,8 +3,7 @@
 <suite name="Default Suite">
   <test name="sebas">
     <classes>
-      <class name="BodyTests"/>
-      <class name="StatusTests"/>
+      <class name="Responses"/>
     </classes>
   </test> <!-- sebas -->
 </suite> <!-- Default Suite -->
