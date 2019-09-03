@@ -4,6 +4,7 @@
   <test name="sebas">
     <classes>
       <class name="Responses"/>
+      <class name="BodyTests"></class>
     </classes>
   </test> <!-- sebas -->
 </suite> <!-- Default Suite -->

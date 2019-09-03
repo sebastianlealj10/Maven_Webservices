@@ -10,13 +10,13 @@ import io.restassured.matcher.RestAssuredMatchers.*;
 
 
 
-public class BodyTests {
+public class BodyTests extends TestBase {
 
         @Test
             public void test_getUserBody() {
             given().
                     when().contentType(ContentType.JSON).
-                    get("http://localhost:8080/api/users/11").
+                    get("12").
                     then().
                     assertThat().
                     body("email",equalTo("sebas@gmail.com"));

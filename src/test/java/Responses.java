@@ -158,7 +158,7 @@ public class Responses extends TestBase {
 
         given().
                 when().
-                delete("/30").
+                delete("/32").
                 then().
                 assertThat().
                 statusCode(200);
