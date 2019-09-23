@@ -1,19 +1,28 @@
+import com.google.gson.JsonObject;
 import io.restassured.http.ContentType;
 import org.testng.annotations.Test;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.*;
 
 public class Responses extends TestBase {
 
+    private static final Logger logger = LogManager.getLogger("Requests");
 
     @Test
     public void test_getStatusOk() {
+
         given().
                 when().
-                get().
+                get("1").
                 then().
                 assertThat().
-                statusCode(200);
+                statusCode(200).
+                body("$",hasKey("id")).
+                body("$",hasKey("email")).
+                body("$",hasKey("firstName")).
+                body("$",hasKey("lastName"));
     }
 
     @Test
@@ -27,111 +36,6 @@ public class Responses extends TestBase {
     }
 
     @Test
-    public void test_postStatus() {
-
-        String bodyString = "{\"email\":\"sebas@gmail.com\",\"firstName\": \"sebastian\",\"lastName\": \"leal\" }";
-
-        given().
-                when().
-                contentType(ContentType.JSON).
-                body(bodyString).
-                post().
-                then().
-                assertThat().
-                statusCode(201);
-    }
-
-    @Test
-    public void test_postStatusBadRequest() {
-
-        String bodyString = "{\"email\":\"sebas@gmail.com\"\"id\":\"2\",\"firstName\": \"sebastian\",\"lastName\": \"leal\" }";
-
-        given().
-                when().
-                contentType(ContentType.JSON).
-                body(bodyString).
-                post().
-                then().
-                assertThat().
-                statusCode(400);
-    }
-
-    @Test
-    public void test_postStatusNotAllowed() {
-
-        String bodyString = "{\"email\":\"sebas@gmail.com\",\"firstName\": \"sebastian\",\"lastName\": \"leal\" }";
-
-        given().
-                when().
-                contentType(ContentType.JSON).
-                body(bodyString).
-                post("/100").
-                then().
-                assertThat().
-                statusCode(405);
-    }
-
-    @Test
-    public void test_putStatusNotAllowed() {
-
-        String bodyString = "{\"email\":\"sebas@gmail.com\", \"id\":\"4\" ,\"firstName\": \"sebastian\",\"lastName\": \"leal\" }";
-
-        given().
-                when().
-                contentType(ContentType.JSON).
-                body(bodyString).
-                put("/10").
-                then().
-                assertThat().
-                statusCode(405);
-    }
-
-    @Test
-    public void test_putStatus() {
-
-        String bodyString = "{\"email\":\"sebas@gmail.com\", \"id\":\"4\" ,\"firstName\": \"sebastian\",\"lastName\": \"leal\" }";
-
-        given().
-                when().
-                contentType(ContentType.JSON).
-                body(bodyString).
-                put().
-                then().
-                assertThat().
-                statusCode(201);
-    }
-
-    @Test
-    public void test_putStatusNotModified() {
-
-        String bodyString = "{\"email\":\"sebas@gmail.com\", \"i\":\"4\" ,\"firstName\": \"sebastian\",\"lastName\": \"leal\" }";
-
-        given().
-                when().
-                contentType(ContentType.JSON).
-                body(bodyString).
-                put().
-                then().
-                assertThat().
-                statusCode(304);
-    }
-
-    @Test
-    public void test_putStatusBadRequest() {
-
-        String bodyString = "{\"email\":\"sebas@gmail.com\", \"id\":\"hola\" ,\"firstName\": \"sebastian\",\"lastName\": \"leal\" }";
-
-        given().
-                when().
-                contentType(ContentType.JSON).
-                body(bodyString).
-                put().
-                then().
-                assertThat().
-                statusCode(400);
-    }
-
-    @Test
     public void test_getStatusUserBadRequest() {
 
         given().
@@ -142,12 +46,152 @@ public class Responses extends TestBase {
                 statusCode(400);
     }
 
+    @Test(dataProviderClass = DataProviders.class,dataProvider = "PostRequest")
+    public void test_postStatus(String email,String firstName, String lastName) {
+
+        JsonObject Request = new JsonObject();
+        Request.addProperty("email",email);
+        Request.addProperty("firstName",firstName);
+        Request.addProperty("lastName",lastName);
+
+        given().
+                when().
+                contentType(ContentType.JSON).
+                body(Request).
+                post().
+                then().
+                assertThat().
+                statusCode(201);
+    }
+
+    @Test(dataProviderClass = DataProviders.class,dataProvider = "PostRequest")
+    public void test_postStatusNotModified(String email,String firstName, String lastName) {
+
+        JsonObject Request = new JsonObject();
+        Request.addProperty("id",20);
+        Request.addProperty("email",email);
+        Request.addProperty("firstName",firstName);
+        Request.addProperty("lastName",lastName);
+
+        given().
+                when().
+                contentType(ContentType.JSON).
+                body(Request).
+                post().
+                then().
+                assertThat().
+                statusCode(304);
+    }
+
+    @Test(dataProviderClass = DataProviders.class, dataProvider = "PostRequest")
+    public void test_postStatusNotAllowed(String email,String firstName, String lastName) {
+
+        JsonObject Request = new JsonObject();
+        Request.addProperty("email",email);
+        Request.addProperty("firstName",firstName);
+        Request.addProperty("lastName",lastName);
+        Request.addProperty("address","45 Avenue");
+
+        given().
+                when().
+                contentType(ContentType.JSON).
+                body(Request).
+                post("/100").
+                then().
+                assertThat().
+                statusCode(405);
+    }
+
+    @Test(dataProviderClass = DataProviders.class, dataProvider = "PutRequest")
+    public void test_putStatus(int id, String email, String firstName, String lastName) {
+
+        JsonObject Request = new JsonObject();
+        Request.addProperty("id",id);
+        Request.addProperty("email",email);
+        Request.addProperty("firstName",firstName);
+        Request.addProperty("lastName",lastName);
+
+        given().
+                when().
+                contentType(ContentType.JSON).
+                body(Request).
+                put().
+                then().
+                assertThat().
+                statusCode(201);
+        given().
+                when().
+                get("/"+ id).
+                then().
+                assertThat().
+                statusCode(200).
+                body("id",equalTo(id)).
+                body("email",equalTo(email)).
+                body("firstName",equalTo(firstName)).
+                body("lastName",equalTo(lastName));
+    }
+
+    @Test(dataProviderClass = DataProviders.class, dataProvider = "PutRequest")
+    public void test_putStatusNotAllowed(int id, String email, String firstName, String lastName) {
+        JsonObject Request = new JsonObject();
+        Request.addProperty("id","20");
+        Request.addProperty("email",email);
+        Request.addProperty("firstName",firstName);
+        Request.addProperty("lastName",lastName);
+
+        given().
+                when().
+                contentType(ContentType.JSON).
+                body(Request).
+                put("/"+ id).
+                then().
+                assertThat().
+                statusCode(405);
+    }
+
+    @Test(dataProviderClass = DataProviders.class, dataProvider = "PutRequest")
+    public void test_putStatusNotModified(int id, String email, String firstName, String lastName) {
+        JsonObject Request = new JsonObject();
+        Request.addProperty("i","20");
+        Request.addProperty("email",email);
+        Request.addProperty("firstName",firstName);
+        Request.addProperty("lastName",lastName);
+
+        given().
+                when().
+                contentType(ContentType.JSON).
+                body(Request).
+                put().
+                then().
+                assertThat().
+                statusCode(304);
+    }
+
+    @Test(dataProviderClass = DataProviders.class, dataProvider = "PutRequest")
+    public void test_putStatusBadRequest(int id, String email, String firstName, String lastName) {
+
+        JsonObject Request = new JsonObject();
+        Request.addProperty("id","Hola");
+        Request.addProperty("email",email);
+        Request.addProperty("firstName",firstName);
+        Request.addProperty("lastName",lastName);
+
+        given().
+                when().
+                contentType(ContentType.JSON).
+                body(Request).
+                put().
+                then().
+                assertThat().
+                statusCode(400);
+    }
+
     @Test
     public void test_deleteStatusNotFound() {
 
         given().
                 when().
-                delete("/11").
+                delete("/20").
                 then().
                 assertThat().
                 statusCode(304);
@@ -158,7 +202,7 @@ public class Responses extends TestBase {
 
         given().
                 when().
-                delete("/32").
+                delete("/20").
                 then().
                 assertThat().
                 statusCode(200);
